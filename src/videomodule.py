@@ -1,18 +1,29 @@
 import os
 import numpy as np
 import auditok
-from pydub import AudioSegment
+from pydub import AudioSegment # do stuff to audio in an easy way
 import speech_recognition as sr
 from moviepy.editor import *
 import cv2 as cv
+import ffmpeg
 
-# mp4 轉成 wav -----------------------------
-#inputfile = "media/tainanvlog.mp4"
-inputfile = "media/try720.MOV"
-wavfile = "media/try720.wav"
-#os.system("ffmpeg -i "+inputfile+" "+wavfile)
+def fileIsExisted(file_name:str, file_dir:str):
+    path = file_dir
+    if os.path.exists(file_dir+file_name):
+        return True
+    
+    return False
+
+# convert video format via FFmpeg
+stream_name = input('Enter stream name: ') # change your file here
+stream_dir =  "/home/ball45/Videos/" # change your file here
+stream_pos = stream_dir + stream_name
+if not fileIsExisted(stream_name+'.wav', stream_dir):
+    os.system('ffmpeg -i \'' + stream_pos + '.mp4\' \'' + stream_pos + '.wav\'')
+
 
 # 測試靜音 ----------------------------------
+# numpy.zeros(shape, dtype=float, order='C', *, like=None)
 record_start = np.zeros(1000)
 record_end = np.zeros(1000)
 duration = np.zeros(1000)
@@ -20,10 +31,11 @@ speech = np.zeros(1000)
 num = 0
 ins=[]
 
-# split returns a generator of AudioRegion objects
-sound = AudioSegment.from_file(wavfile, format="wav") 
+# Pydub does things in milliseconds
+sound = AudioSegment.from_file(stream_pos+'.wav', format="wav") 
+# returns generator of AudioRegion objects
 audio_regions = auditok.split(
-    wavfile,
+    stream_name + 'wav',
     min_dur=0.2,         # minimum duration of a valid audio event in seconds
     max_dur=100,         # maximum duration of an event
     max_silence=2,       # maximum duration of tolerated continuous silence within an event
