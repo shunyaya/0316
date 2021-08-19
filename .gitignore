@@ -4,6 +4,8 @@ test/
 .vscode/
 src/.vscode/
 .venv/
+src/subtitle_module/movie.mp4
+src/subtitle_module/movie_output.mp4
 
 # Add by Chin
 media/
