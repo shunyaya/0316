@@ -1,6 +1,12 @@
-FONT_URL='/home/ball45/Projects/video/resources/wt024.ttf'
+'''
+Please place video file into 'resources' directory.
+
+'''
+
+FONT_URL='../../resources/wt024.ttf'
 from moviepy import editor
 import os
+os.system("echo pwd: $(pwd)")
 
 # handling with video source
 source_file = input('Enter your video stream and file name:')
