@@ -9,15 +9,17 @@ import cv2 as cv
 
 # mp4 轉成 wav -----------------------------
 #inputfile = "media/tainanvlog.mp4"
-inputfile = "media/IMG_9589.MOV"
-wavfile = "media/IMG_9589.wav"
-outfile = "media/video9589_out.mp4"
-os.system("ffmpeg -i "+inputfile+" "+wavfile)
+source_file = "media/tetest.mp4"
+slash_pos = source_file.rfind('/')
+dot_pos = source_file.rfind('.')
+source_path, source_name, source_format = source_file[:slash_pos+1], source_file[slash_pos+1:dot_pos], source_file[dot_pos:]
+wavfile = source_path + source_name + '.wav'
+outfile = source_path + source_name + '_out.mp4'
 
-clip = VideoFileClip(inputfile)
-fps = 30
-sum = 0
-summ = 0
+if not os.path.exists(wavfile):
+    os.system("ffmpeg -i "+source_file+" "+source_path + source_name + '.wav')
+
+clip = VideoFileClip(source_file)
 new_frame = []
 
 #轉灰階--------------------------------------
@@ -29,6 +31,21 @@ for frames in clip.iter_frames():
     if key == ord("q"):
         break
 
+# 找出fps---------------------------------------
+def cap_fps(major_ver):
+    
+    if int(major_ver)  < 3 :
+        fps = clip.get(cv.CV_CAP_PROP_FPS)
+    else :
+        fps = clip.get(cv.CAP_PROP_FPS)
+    
+    return fps
+
+clip = cv.VideoCapture(source_file)
+# Find OpenCV version
+(major_ver, minor_ver, subminor_ver) = (cv.__version__).split('.')
+fps = int(cap_fps(major_ver)) 
+clip.release()
 
 # 測試靜音 ----------------------------------
 record_start = np.zeros(1000)
@@ -62,11 +79,10 @@ for j in range(num-1):
     print("Silence ", j, " :", round(record_end[j], 3), 's', 'to', round(record_start[j+1], 3), 's, Duration : ', duration[j])
 
     # if there are two continuous silence sections >2.5 
-    if duration[j-1] > 2.5 and duration[j] > 1.9 and speech[j] < 5.0:
+    if duration[j-1] > 1.4 and duration[j] > 1.4 and speech[j] < 5.0:
         print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
         a=int(record_start[j])
         b=int(record_end[j])+1
-        #print(a,b,type(a))
         instruction = sound[a*1000:b*1000]
         filename=instruction.export("media/instruction.wav",format="wav")
 # 辨識是否為語音指令“剪接” ---------------------------
@@ -79,17 +95,19 @@ for j in range(num-1):
             if "剪接" in str(s):
                 print("Instruction : 剪接")
                 front = int(record_end[j-1])
-                if (front-10) < 0 :
+                if (front-5) < 0 :
                     ex=0
                 else :
-                    ex=front-10
+                    ex=front-5
             # 偵測重複 ----------------------------------
 
                 min = 1000000
+                sum = 0
+                summ = 0
                 # 比較第t秒和第cutpoint秒的frames，一秒鐘有30個frame(fps=30)
                 for cutpoint in range(int(record_start[j+1]),int(record_start[j+1])+2) :
                     for t in range(ex,front):
-                        for k in range(fps+120):
+                        for k in range(fps*2):
                             for i in np.square(new_frame[t*fps+k] - new_frame[cutpoint*fps+k]):
                                 sum = sum + i
                         for j in sum :
@@ -107,7 +125,7 @@ for j in range(num-1):
                 if cut != 1 :
                     file = final_clip
                 else :
-                    file = inputfile
+                    file = source_file
 
                 clip1 = VideoFileClip(file).subclip(0, t1)
                 clip2 = VideoFileClip(file).subclip(t2, )
@@ -116,9 +134,9 @@ for j in range(num-1):
             else:
                 print(s,'pass')
 
-        except r.UnknowValueError:
+        except sr.UnknownValueError:   
             Text = "無法翻譯"
-        except sr.Requesterror as e:
+        except sr.RequestError as e:
             Text = "無法翻譯{0}".format(e)
 
 final_clip.write_videofile(outfile)
