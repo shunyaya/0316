@@ -15,7 +15,7 @@ try:
         print('pass')
 # except Exception as e:
 #     print("Exception: "+str(e))
-except r.UnknowValueError:
+except sr.UnknownValueError:
     Text = "無法翻譯"
-except sr.Requesterror as e:
+except sr.RequestError as e:
     Text = "無法翻譯{0}".format(e)

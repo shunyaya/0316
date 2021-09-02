@@ -15,6 +15,10 @@ class FirstMainWin (QMainWindow):
 
         self.status.showMessage('只存在五秒的消息', 5000)
 
+        self.file_paths = []
+        self.index = 0
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 

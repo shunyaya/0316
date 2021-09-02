@@ -19,10 +19,10 @@ outfile = source_path + source_name + '_out.mp4'
 if not os.path.exists(wavfile):
     os.system("ffmpeg -i "+source_file+" "+source_path + source_name + '.wav')
 
-clip = VideoFileClip(source_file)
-new_frame = []
 
 #轉灰階--------------------------------------
+clip = VideoFileClip(source_file)
+new_frame = []
 for frames in clip.iter_frames():
     gray = cv.cvtColor(frames, cv.COLOR_BGR2GRAY)
     #cv.imshow("gray", gray) #播放灰階影片
@@ -32,19 +32,9 @@ for frames in clip.iter_frames():
         break
 
 # 找出fps---------------------------------------
-def cap_fps(major_ver):
-    
-    if int(major_ver)  < 3 :
-        fps = clip.get(cv.CV_CAP_PROP_FPS)
-    else :
-        fps = clip.get(cv.CAP_PROP_FPS)
-    
-    return fps
-
 clip = cv.VideoCapture(source_file)
-# Find OpenCV version
-(major_ver, minor_ver, subminor_ver) = (cv.__version__).split('.')
-fps = int(cap_fps(major_ver)) 
+fps = clip.get(cv.CAP_PROP_FPS)
+fps = round(fps,)       
 clip.release()
 
 # 測試靜音 ----------------------------------
@@ -69,8 +59,8 @@ audio_regions = auditok.split(
 for i, r in enumerate(audio_regions):
     record_start[i] = r.meta.start
     record_end[i] = r.meta.end
-    speech[i] = record_end[i] - record_start[i]
-    print("Speech  {i}: {r.meta.start:.3f}s -- {r.meta.end:.3f}s".format(i=i,r=r), "Duration : ", speech[i])
+    #speech[i] = record_end[i] - record_start[i]
+    #print("Speech  {i}: {r.meta.start:.3f}s -- {r.meta.end:.3f}s".format(i=i,r=r), "Duration : ", speech[i])
     num = num+1
 
 for j in range(num-1):
@@ -80,7 +70,7 @@ for j in range(num-1):
 
     # if there are two continuous silence sections >2.5 
     if duration[j-1] > 1.4 and duration[j] > 1.4 and speech[j] < 5.0:
-        print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
+        #print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
         a=int(record_start[j])
         b=int(record_end[j])+1
         instruction = sound[a*1000:b*1000]
@@ -94,11 +84,11 @@ for j in range(num-1):
             s = r.recognize_google(audio_data=audio, key=None,language="zh-TW", show_all=True)
             if "剪接" in str(s):
                 print("Instruction : 剪接")
-                front = int(record_end[j-1])
-                if (front-5) < 0 :
-                    ex=0
+                before_ins_end = int(record_end[j-1])
+                if (int(record_end[j-1])-5) < 0 :
+                    before_ins_start=0
                 else :
-                    ex=front-5
+                    before_ins_start=int(record_end[j-1])-5
             # 偵測重複 ----------------------------------
 
                 min = 1000000
@@ -106,7 +96,7 @@ for j in range(num-1):
                 summ = 0
                 # 比較第t秒和第cutpoint秒的frames，一秒鐘有30個frame(fps=30)
                 for cutpoint in range(int(record_start[j+1]),int(record_start[j+1])+2) :
-                    for t in range(ex,front):
+                    for t in range(before_ins_start,before_ins_end):
                         for k in range(fps*2):
                             for i in np.square(new_frame[t*fps+k] - new_frame[cutpoint*fps+k]):
                                 sum = sum + i
