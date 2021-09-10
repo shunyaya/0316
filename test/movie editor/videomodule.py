@@ -4,7 +4,6 @@ import auditok
 from pydub import AudioSegment
 import speech_recognition as sr
 from moviepy.editor import *
-from moviepy import editor
 import cv2 as cv
 
 # mp4 轉成 wav -----------------------------
@@ -94,7 +93,7 @@ for j in range(num-1):
                   
                 after_ins_start = float(record_start[j+1]) # 指令後的起始時間
                 
-                for i in range(10*fps):
+                for i in range(5*fps):
                     before_ins = gray_scalar[before_ins_start*fps+i]
                     after_ins = gray_scalar[round(after_ins_start*fps)]
                     
