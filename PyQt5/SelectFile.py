@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 class ListViewDemo(QWidget):
     def __init__(self, parent = None):
@@ -29,11 +30,14 @@ class ListViewDemo(QWidget):
         #建立一個空的模型
         self.listModle = QStringListModel()
         self.list = ["列表項1", "列表項2", "列表項3"]
-
          #將數據放到空的模型內
         self.listModle.setStringList(self.list)
         self.listview.setModel(self.listModle)
         layout.addWidget(self.listview)
+
+        self.combobox = QComboBox()
+        self.combobox.setItemText(3, "Tw")
+        layout.addWidget(self.combobox)
 
         self.buttonClip = QPushButton('Edit Video')
         self.buttonClip.clicked.connect(self.VideoEdit)
