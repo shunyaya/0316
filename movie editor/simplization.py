@@ -35,7 +35,7 @@ def GrayScalar(sourcefile):
     print('frame size : W =', len(gray_scalar[0]), 'H =', len(gray_scalar[0]))
     return gray_scalar
 
-# 找出fps---------------------------------------
+# 找出fps
 def DetectFps(source_file):
     clip = cv.VideoCapture(source_file)
     fps = clip.get(cv.CAP_PROP_FPS)
@@ -43,33 +43,8 @@ def DetectFps(source_file):
     clip.release()
     return fps
 
-# 測試靜音 ----------------------------------
-# split returns a generator of AudioRegion objects
-def DetectSilence(wavfile):
-    audio_regions = auditok.split(
-        wavfile,
-        min_dur=0.2,         # minimum duration of a valid audio event in seconds
-        max_dur=100,         # maximum duration of an event
-        max_silence=2,       # maximum duration of tolerated continuous silence within an event
-        energy_threshold=50  # threshold of detection
-    )
-
-    record_start = np.zeros(1000)
-    record_end = np.zeros(1000)
-    speech_duration = np.zeros(1000)
-    num = 0
-
-    for i, r in enumerate(audio_regions):
-        record_start[i] = r.meta.start
-        record_end[i] = r.meta.end
-        speech_duration[i] = record_end[i] - record_start[i]
-        num = num+1
-    
-    return num, record_start, record_end, speech_duration
-    
-
 # 辨識是否為語音指令“剪接”
-def DetectIns(wavfile,ins_start):
+def RecIns(wavfile,ins_start):
     r = sr.Recognizer()
     instruction = sr.AudioFile(wavfile)
     with instruction as source:
@@ -109,16 +84,31 @@ def CutPoint(gray_scalar, before_ins_end, after_ins_start, fps):
     #輸出最相近
     print(cutpoint, min)
     
-if __name__ == "__main__" :
-    file = Input("media/tetest.mp4")
-    
+def main(sourcefile):
+    file = Input(sourcefile) 
     gray_scalar =  GrayScalar(file[0]) 
     fps = DetectFps(file[0]) 
-    num = DetectSilence(file[1])[0]
-    record_start = DetectSilence(file[1])[1]
-    record_end = DetectSilence(file[1])[2]
-    speech_duration = DetectSilence(file[1])[3]
+    
+    # 測試靜音 
+    wavfile = file[1]
+    audio_regions = auditok.split(
+        wavfile,
+        min_dur=0.2,         # minimum duration of a valid audio event in seconds
+        max_dur=100,         # maximum duration of an event
+        max_silence=2,       # maximum duration of tolerated continuous silence within an event
+        energy_threshold=50  # threshold of detection
+    )
+    record_start = np.zeros(1000)
+    record_end = np.zeros(1000)
+    speech_duration = np.zeros(1000)
     silence_duration = np.zeros(1000)
+    num = 0
+
+    for i, r in enumerate(audio_regions):
+        record_start[i] = r.meta.start
+        record_end[i] = r.meta.end
+        speech_duration[i] = record_end[i] - record_start[i]
+        num = num+1
     
     for j in range(num-1):
         silence_duration[j] = record_start[j+1] - record_end[j]
@@ -126,11 +116,12 @@ if __name__ == "__main__" :
         # if there are two continuous silence sections >2.5 
         if silence_duration[j-1] > 1.4 and silence_duration[j] > 1.4 and speech_duration[j] < 5.0:
             #print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
-            if "剪接" in DetectIns(file[1],round(record_start[j], 3)):
+            if "剪接" in RecIns(file[1],round(record_start[j], 3)):
                 print("Instruction: 剪接") 
-                CutPoint(gray_scalar, int(record_end[j-1]), float(record_start[j+1]), fps)
+                CutPoint(gray_scalar, int(record_end[j-1]), round(record_start[j+1], 3), fps)
      
-
+if __name__ == "__main__" :
+    main("media/tetest.mp4")
 
 
 
