@@ -20,8 +20,7 @@ for i, r in enumerate(audio_regions):
     record_start[i] = r.meta.start
     record_end[i] = r.meta.end
     speech[i] = record_end[i] - record_start[i]
-    print("Speech  {i}: {r.meta.start:.3f}s -- {r.meta.end:.3f}s".format(i=i,
-          r=r), "Duration : ", speech[i])
+    print("Speech  {i}: {r.meta.start:.3f}s -- {r.meta.end:.3f}s".format(i=i,r=r), "Duration : ", speech[i])
     num = num+1
 
 for j in range(num-1):
