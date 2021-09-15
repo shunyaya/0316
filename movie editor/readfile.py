@@ -1,21 +1,23 @@
 import speech_recognition as sr
 
-r = sr.Recognizer()
-with sr.AudioFile("media/tetest.wav") as source:
-    audio = r.record(source)
 
-try:
-    s = r.recognize_google(audio_data=audio, key=None,
-                           language="zh-TW", show_all=True)  # , show_all=True
-    # print(str(s))
-    print("Instruction: ")
-    if "剪接" in str(s):
-        print("剪接")
-    else:
-        print('pass')
-# except Exception as e:
-#     print("Exception: "+str(e))
-except sr.UnknownValueError:
-    Text = "無法翻譯"
-except sr.RequestError as e:
-    Text = "無法翻譯{0}".format(e)
+def DetectIns(wavfile,ins_start):
+    r = sr.Recognizer()
+    instruction = sr.AudioFile(wavfile)
+    with instruction as source:
+        audio = r.record(source, offset = ins_start, duration = 5)
+    try:
+        ins = r.recognize_google(audio_data=audio, key=None,language="zh-TW", show_all=True)  # show_all=True
+        if "剪接" in str(ins):
+            print("Instruction: 剪接")
+        else:
+            print("Instruction: ", ins)
+            pass
+
+    except sr.UnknownValueError:
+        ins = "無法翻譯"
+    except sr.RequestError as e:
+        ins = "無法翻譯{0}".format(e)
+
+if __name__ == "__main__" :
+    DetectIns(10.35)

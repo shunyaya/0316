@@ -16,8 +16,10 @@ import os
 clip1 = VideoFileClip("media/hef.MOV")
 clip2 = VideoFileClip("media/heef.MOV")
 
-final_clip = concatenate_videoclips([clip1, clip2, clip1])
-final_clip.write_videofile("media/testtt.mp4")
+def MovieEdit(file):
+    clip1 = VideoFileClip(file).subclip(0, cutpoint)
+    clip2 = VideoFileClip(file).subclip(after_ins_start, )
+    final_clip = concatenate_videoclips([clip1, clip2])
 
 
 # 剪接 -------------------------------------

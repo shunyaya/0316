@@ -8,7 +8,7 @@ import cv2 as cv
 
 # mp4 轉成 wav -----------------------------
 #inputfile = "media/tainanvlog.mp4"
-source_file = "media/IMG_9589.MOV"
+source_file = "media/tetest.mp4"
 slash_pos = source_file.rfind('/')
 dot_pos = source_file.rfind('.')
 source_path, source_name, source_format = source_file[:slash_pos+1], source_file[slash_pos+1:dot_pos], source_file[dot_pos:]
@@ -67,19 +67,15 @@ for j in range(num-1):
     # if there are two continuous silence sections >2.5 
     if silence_duration[j-1] > 1.4 and silence_duration[j] > 1.4 and speech_duration[j] < 5.0:
         #print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
-        a=int(record_start[j])
-        b=int(record_end[j])+1
-        instruction = sound[a*1000:b*1000]
-        filename=instruction.export("media/instruction.wav",format="wav")
 
 # 辨識是否為語音指令“剪接” ---------------------------
         r = sr.Recognizer()
-
-        with sr.AudioFile("media/instruction.wav") as source:
-            audio = r.record(source)
+        instruction = sr.AudioFile(wavfile)
+        with instruction as source:
+            audio = r.record(source, offset = record_start[j], duration = 5)
         try:
-            s = r.recognize_google(audio_data=audio, key=None,language="zh-TW", show_all=True)
-            if "剪接" in str(s):
+            ins = r.recognize_google(audio_data=audio, key=None,language="zh-TW", show_all=True)
+            if "剪接" in str(ins):
                 print("Instruction : 剪接")                
 # 偵測重複 ----------------------------------
                 min = 100000000000
@@ -116,12 +112,12 @@ for j in range(num-1):
                 clip2 = VideoFileClip(file).subclip(after_ins_start, )
                 final_clip = concatenate_videoclips([clip1, clip2])
             else:
-                print(s,'pass')
+                print(ins,'pass')
                 pass
 
         except sr.UnknownValueError:   
-            Text = "無法翻譯"
+            ins = "無法翻譯"
         except sr.RequestError as e:
-            Text = "無法翻譯{0}".format(e)
+            ins = "無法翻譯{0}".format(e)
 
 final_clip.write_videofile(outfile)

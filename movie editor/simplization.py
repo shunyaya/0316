@@ -36,7 +36,6 @@ fps = clip.get(cv.CAP_PROP_FPS)
 fps = round(fps,)       
 clip.release()
 
-# 測試靜音 ----------------------------------
 # split returns a generator of AudioRegion objects
 sound = AudioSegment.from_file(wavfile, format="wav") 
 audio_regions = auditok.split(
@@ -46,31 +45,33 @@ audio_regions = auditok.split(
     max_silence=2,       # maximum duration of tolerated continuous silence within an event
     energy_threshold=50  # threshold of detection
 )
+# 測試靜音 ----------------------------------
+class VideoEdit():
+    
+    def Speech():
+        record_start = np.zeros(1000)
+        record_end = np.zeros(1000)
+        silence_duration = np.zeros(1000)
+        speech_duration = np.zeros(1000)
+        num = 0
+        cut=1
+        for i, r in enumerate(audio_regions):
+            record_start[i] = r.meta.start
+            record_end[i] = r.meta.end
+            num = num+1
 
-record_start = np.zeros(1000)
-record_end = np.zeros(1000)
-silence_duration = np.zeros(1000)
-speech_duration = np.zeros(1000)
-num = 0
-cut=1
+        for j in range(num-1):
+            # evaluate silence section length
+            silence_duration[j] = record_start[j+1] - record_end[j]
+            print("Silence ", j, " :", round(record_end[j], 3), 's', 'to', round(record_start[j+1], 3), 's, Duration : ', silence_duration[j])
 
-for i, r in enumerate(audio_regions):
-    record_start[i] = r.meta.start
-    record_end[i] = r.meta.end
-    num = num+1
-
-for j in range(num-1):
-    # evaluate silence section length
-    silence_duration[j] = record_start[j+1] - record_end[j]
-    print("Silence ", j, " :", round(record_end[j], 3), 's', 'to', round(record_start[j+1], 3), 's, Duration : ', silence_duration[j])
-
-    # if there are two continuous silence sections >2.5 
-    if silence_duration[j-1] > 1.4 and silence_duration[j] > 1.4 and speech_duration[j] < 5.0:
-        #print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
-        a=int(record_start[j])
-        b=int(record_end[j])+1
-        instruction = sound[a*1000:b*1000]
-        filename=instruction.export("media/instruction.wav",format="wav")
+            # if there are two continuous silence sections >2.5 
+            if silence_duration[j-1] > 1.4 and silence_duration[j] > 1.4 and speech_duration[j] < 5.0:
+                #print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
+                a=int(record_start[j])
+                b=int(record_end[j])+1
+                instruction = sound[a*1000:b*1000]
+                filename=instruction.export("media/instruction.wav",format="wav")
 
 # 辨識是否為語音指令“剪接” ---------------------------
         r = sr.Recognizer()
@@ -111,7 +112,7 @@ for j in range(num-1):
                 else :
                     file = source_file
                     cut+=1
-
+                
                 clip1 = VideoFileClip(file).subclip(0, cutpoint)
                 clip2 = VideoFileClip(file).subclip(after_ins_start, )
                 final_clip = concatenate_videoclips([clip1, clip2])
