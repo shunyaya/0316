@@ -13,7 +13,7 @@ import cv2 as cv
 class ListViewDemo(QWidget):
     def __init__(self, parent = None):
         super(ListViewDemo, self).__init__(parent)
-        self.setWindowTitle('QListView Demo')
+        self.setWindowTitle('智慧影音接軌')
         self.resize(500,270)
         self.initUI()
        
@@ -36,9 +36,9 @@ class ListViewDemo(QWidget):
         self.listview = QListView()
         #建立一個空的模型
         self.listModle = QStringListModel()
-        self.list = ["列表項1", "列表項2", "列表項3"]
+        #self.list = ["列表項1", "列表項2", "列表項3"]
          #將數據放到空的模型內
-        self.listModle.setStringList(self.list)
+        #self.listModle.setStringList(self.list)
         self.listview.setModel(self.listModle)
         layout.addWidget(self.listview)
 
@@ -196,6 +196,7 @@ class ListViewDemo(QWidget):
                 
 if __name__ == "__main__" :
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon('./PyQt5/1179069.png'))
     win = ListViewDemo()
     win.show()
     sys.exit(app.exec_())
