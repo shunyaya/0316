@@ -121,3 +121,4 @@ for j in range(num-1):
             ins = "無法翻譯{0}".format(e)
 
 final_clip.write_videofile(outfile)
+final_clip.close()
