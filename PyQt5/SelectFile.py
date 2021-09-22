@@ -14,7 +14,7 @@ class ListViewDemo(QWidget):
     def __init__(self, parent = None):
         super(ListViewDemo, self).__init__(parent)
         self.setWindowTitle('智慧影音接軌')
-        self.resize(500,270)
+        self.resize(450,500)
         self.initUI()
        
     def initUI(self):
