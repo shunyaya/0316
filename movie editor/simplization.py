@@ -56,13 +56,17 @@ def RecIns(wavfile,ins_start):
     except sr.RequestError as e:
         ins = "無法翻譯{0}".format(e)
     
-    return str(ins)
+    if "剪接" in str(ins):
+        print("Instruction: 剪接") 
+        return True
+    
 
-#測試平方
 def CutPoint(gray_scalar, before_ins_end, after_ins_start, fps):   
-    #before_ins_end   指令前的結束時間
-    #before_ins_start 指令前的起始時間
-    #after_ins_start  指令後的起始時間
+    ''' 
+    before_ins_end   指令前的結束時間
+    before_ins_start 指令前的起始時間
+    after_ins_start  指令後的起始時間
+    '''
     
     min = 100000000000
     # 抓影片前5秒進行辨識
@@ -116,8 +120,7 @@ def main(sourcefile):
         # if there are two continuous silence sections >2.5 
         if silence_duration[j-1] > 1.4 and silence_duration[j] > 1.4 and speech_duration[j] < 5.0:
             #print("instruction : ", round(record_start[j], 3), 's', 'to', round(record_end[j], 3), 's')
-            if "剪接" in RecIns(file[1],round(record_start[j], 3)):
-                print("Instruction: 剪接") 
+            if RecIns(file[1], round(record_start[j], 3)) == True:
                 CutPoint(gray_scalar, int(record_end[j-1]), round(record_start[j+1], 3), fps)
      
 if __name__ == "__main__" :
